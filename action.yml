@@ -36,6 +36,10 @@ inputs:
     description: Test targets or Target/Suite ids to run on every pull request, one per line
     required: false
     default: ""
+  select-tests-scheme:
+    description: "The scheme `xcodebuild test` runs: -only-testing names only its test targets, read from project.yml or the shared .xcscheme (default: every test target of the project). Swift package test targets go to swift-filter."
+    required: false
+    default: ""
   select-tests-sample:
     description: Share of the other test files to run anyway, so every test runs on some pull requests
     required: false
@@ -48,9 +52,9 @@ outputs:
   stats:
     description: Path of the JSON file with the server's counters, updated while the job runs
   tests:
-    description: "With select-tests: 'all', 'some' or 'none' (nothing the change reaches; skip the test step or pass only-testing, which skips every target)"
+    description: "With select-tests: 'all', 'some' or 'none' for xcodebuild (none: nothing the change reaches is in the project; skip the test step or pass only-testing, which skips every target)"
   only-testing:
-    description: With select-tests, the -only-testing / -skip-testing arguments for xcodebuild (empty when everything runs); also in WARMBUILD_ONLY_TESTING
+    description: With select-tests, the -only-testing / -skip-testing arguments for xcodebuild, naming only the project's test targets (empty when everything runs); also in WARMBUILD_ONLY_TESTING
   swift-filter:
     description: With select-tests, a `swift test --filter` pattern for the selected tests (empty when everything runs)
 runs:

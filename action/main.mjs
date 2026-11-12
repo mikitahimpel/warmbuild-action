@@ -81,6 +81,7 @@ function trySelectTests() {
       input("select-tests-sample") || "0.05",
       ...lines("select-tests-ignore").flatMap((r) => ["--ignore", r]),
       ...lines("select-tests-always").flatMap((a) => ["--always", a]),
+      ...(input("select-tests-scheme") ? ["--scheme", input("select-tests-scheme")] : []),
       ...(process.env.GITHUB_STEP_SUMMARY ? ["--summary", process.env.GITHUB_STEP_SUMMARY] : []),
     ],
     { encoding: "utf8", env, timeout: 120_000, maxBuffer: 64 * 1024 * 1024 },
@@ -95,7 +96,7 @@ function trySelectTests() {
   append("GITHUB_ENV", `WARMBUILD_SELECTION=${selectionFile}`);
   if (s.all) return everything(s.reason);
   const args = s.xcodebuild.join(" ");
-  output("tests", s.ids.length ? "some" : "none");
+  output("tests", s.xcodebuildTests ?? (s.ids.length ? "some" : "none"));
   output("only-testing", args);
   output("swift-filter", s.swiftFilter ?? "");
   append("GITHUB_ENV", `WARMBUILD_ONLY_TESTING=${args}`);

@@ -62,6 +62,11 @@ change. Also selected: suites that failed or flaked on the default branch lately
 of the rest. Everything runs when a project or package manifest, `Package.resolved`, an
 `.xcconfig`, a scheme, test plan, entitlements, `Info.plist` or a workflow that runs tests
 changes, when more than 40 files change, or when a resource outside a test directory changes. The
+`only-testing` names only test targets of the Xcode project (with `select-tests-scheme`, of that
+scheme, from `project.yml` or the shared `.xcscheme` and its test plans): `xcodebuild` refuses a
+whole run that names a target its scheme does not hold. Selected tests of Swift package test
+targets are in `swift-filter` only. When a selected test target is neither the project's nor a
+package's, or the project cannot be read, `xcodebuild` runs everything. The
 job summary lists what ran and why, and the dashboard shows tests run, minutes saved and misses
 (default-branch failures in a test a merged pull request skipped). Test targets are named after
 their directory (`…Tests`).
@@ -72,6 +77,7 @@ their directory (`…Tests`).
 | `select-tests-ignore` | none | Paths that never affect tests, one regular expression per line |
 | `select-tests-always` | none | Targets or `Target/Suite` ids to run on every pull request |
 | `select-tests-sample` | `0.05` | Share of the other test files to run anyway |
+| `select-tests-scheme` | none | The scheme `xcodebuild test` runs; `only-testing` names only its test targets (default: every test target of the project) |
 
 | Selection output | |
 | --- | --- |
