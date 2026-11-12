@@ -1,0 +1,25 @@
+name: Warmbuild
+description: Remote compilation cache for Xcode 26+. Add this step before xcodebuild; nothing else changes.
+branding:
+  icon: zap
+  color: orange
+inputs:
+  url:
+    description: Cache API URL
+    required: false
+    default: https://warmbuild-cache-dev.mikitahimpel.com
+  token:
+    description: "A Warmbuild API token, for runners without GitHub OIDC. Leave empty on GitHub-hosted runners (the job needs `permissions: id-token: write`)."
+    required: false
+    default: ""
+outputs:
+  enabled:
+    description: "'true' when the cache server runs and xcodebuild uses it"
+  xcconfig:
+    description: The xcconfig with the cache settings (also exported as XCODE_XCCONFIG_FILE)
+  stats:
+    description: Path of the JSON file with the server's counters, updated while the job runs
+runs:
+  using: node24
+  main: action/main.mjs
+  post: action/post.mjs
