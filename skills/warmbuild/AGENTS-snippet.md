@@ -3,6 +3,13 @@
 This Mac may have the `warmbuild` CLI (`~/.warmbuild/bin/warmbuild`). It serves Xcode's compilation
 cache from what CI built.
 
+- Not installed (`command -v warmbuild` and `~/.warmbuild/bin/warmbuild` both missing, or an Xcode
+  warning "Builds can reuse CI's compiled code"): with the user's OK, run in the repository
+  `curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh | sh -s -- --add-to-path`
+  (or `brew install mikitahimpel/tap/warmbuild`). Then `warmbuild login`: it prints a GitHub URL
+  and a code; show both to the user, who enters the code (it waits up to 15 minutes; GitHub access
+  to the repository is enough). Then `warmbuild start` in the repository.
+
 - `warmbuild status` (`--json`): on or off (exit code 0 or 1), account, last build's hits, misses,
   hit rate and MB, and each worktree's last build. `warmbuild start` in the repository turns the
   cache on for all its worktrees; `warmbuild stop` turns it off, and builds then run without it.
