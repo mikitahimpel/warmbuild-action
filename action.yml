@@ -20,6 +20,10 @@ inputs:
     description: "'false' skips the CI report: where the job's time went, read from Xcode's build logs and result bundles in the post step (names, durations, counts and sizes; never source or logs)."
     required: false
     default: "true"
+  report-budget:
+    description: "Seconds the CI report may spend reading result bundles (xcresulttool) in the post step. What does not fit is skipped and the report says so. On a runner whose Simulator is still busy, xcresulttool can take minutes to start; shut the Simulator down after the tests (xcrun simctl shutdown all) or raise this."
+    required: false
+    default: "90"
   select-tests:
     description: "'true' selects the tests a pull request can reach (see outputs); pushes and other events run everything. Pass `$WARMBUILD_ONLY_TESTING` to `xcodebuild test`."
     required: false

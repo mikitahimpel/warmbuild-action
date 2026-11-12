@@ -39,6 +39,7 @@ state("started", String(Date.now()));
 state("url", input("url"));
 state("workspace", input("workspace") || process.env.GITHUB_WORKSPACE || process.cwd());
 state("report", input("report") || "true");
+state("report-budget", input("report-budget") || "90");
 
 // Test selection, on pull requests only: the default branch runs everything and catches what a
 // pull request skipped. Any failure here runs every test.

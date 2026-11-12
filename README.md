@@ -29,6 +29,16 @@ environment variables. Set `report: false` to turn it off. `xcodebuild test` alw
 report needs; a build-only step (`xcodebuild build`) keeps its log only in a result bundle, so pass
 it `-resultBundlePath "$RUNNER_TEMP/build.xcresult"` to have it counted.
 
+Reading result bundles may take `report-budget` seconds (90) in total; what does not fit is skipped
+and named in the summary. A Simulator that is still running keeps the runner's CPUs busy and makes
+`xcresulttool` slow to start, so shut it down at the end of the test step:
+
+```yaml
+      - run: |
+          xcodebuild test -scheme App -destination 'platform=iOS Simulator,name=iPhone 17'
+          xcrun simctl shutdown all
+```
+
 ## Test selection on pull requests
 
 With `select-tests: true`, a pull request runs only the tests its change can reach; pushes run
@@ -97,6 +107,7 @@ and set it up at the [Warmbuild dashboard](https://warmbuild-dev.mikitahimpel.co
 | `token` | none | A Warmbuild API token, for runners without GitHub OIDC |
 | `workspace` | `$GITHUB_WORKSPACE` | The checkout directory, when `actions/checkout` uses `path:` |
 | `report` | `true` | `false` skips the CI report (summary and upload) |
+| `report-budget` | `90` | Seconds the post step may spend reading result bundles; the rest is skipped and named |
 
 | Output | |
 | --- | --- |

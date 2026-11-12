@@ -47,6 +47,7 @@ if (s) {
 }
 // Where the job's time went, from the logs and result bundles Xcode wrote since the main step.
 if (state("report") !== "false") {
+  const budget = String(Number(state("report-budget")) >= 0 ? Number(state("report-budget")) : 90);
   spawnSync(
     process.execPath,
     [
@@ -60,9 +61,10 @@ if (state("report") !== "false") {
       ...(stats ? ["--stats", stats] : []),
       ...(process.env.GITHUB_STEP_SUMMARY ? ["--summary", process.env.GITHUB_STEP_SUMMARY] : []),
       "--upload",
+      "--budget",
+      budget,
     ],
-    // Reading result bundles waits for xcrun, which a fresh runner can take minutes to start.
-    { stdio: "inherit", timeout: 600_000 },
+    { stdio: "inherit", timeout: (Number(budget) + 60) * 1000 },
   );
 }
 
