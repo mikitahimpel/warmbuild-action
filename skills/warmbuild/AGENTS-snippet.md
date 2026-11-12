@@ -1,15 +1,13 @@
-## Xcode builds: Warmbuild cache
+## Warmbuild (Xcode compilation cache and test selection)
 
-This Mac shares compiled modules with CI through Warmbuild. Before `xcodebuild`:
+This Mac may have the `warmbuild` CLI (`~/.warmbuild/bin/warmbuild`). It serves Xcode's compilation
+cache from what CI built.
 
-- `warmbuild status` (or `~/.warmbuild/bin/warmbuild status`); exit code 1 means off, so run
-  `warmbuild start` from the repository root once. Never run `warmbuild login`; ask the user.
-- Build with `XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig" xcodebuild …`, with the
-  same configuration and destination as CI.
-- Afterwards, `warmbuild status` shows the last build's hits and misses. Low hits: different Xcode
-  than CI, different configuration or destination, or a branch far from the default branch.
-- Affected tests only: `xcodebuild test … $(warmbuild tests --changed)` (diff against the
-  default branch's merge base, uncommitted files included). Empty output runs everything. Run the
-  full suite once before you finish.
-- Never read or print the Warmbuild token. On any Warmbuild error, `warmbuild stop` and build
-  again without `XCODE_XCCONFIG_FILE`.
+- `warmbuild status` (`--json`): on or off (exit code 0 or 1), account, last build's hits, misses,
+  hit rate and MB. `warmbuild start` in the repository turns the cache on; `warmbuild stop` turns
+  it off, and builds then run without it.
+- Building with it: `XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig" xcodebuild …`.
+- `xcodebuild test … $(warmbuild tests --changed)`: only the tests the diff against the default
+  branch reaches (empty output: all tests).
+- `warmbuild login` is interactive and the user's to run. Never read or print the Warmbuild token.
+- If a Warmbuild command or the cache fails, `warmbuild stop` and build without it.

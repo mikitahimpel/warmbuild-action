@@ -77,9 +77,9 @@ On a Mac, `warmbuild tests --changed` prints the same arguments for the working 
 The same cache for local Xcode builds, read-only: what CI compiled on the default branch.
 
 ```sh
-cd your-app
-npx -y github:mikitahimpel/warmbuild-action#v1 login   # GitHub device code, token in the Keychain
-npx -y github:mikitahimpel/warmbuild-action#v1 start   # LaunchAgent + ~/.warmbuild/warmbuild.xcconfig
+curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh | sh   # or: sh install.sh from this repository
+~/.warmbuild/bin/warmbuild login       # GitHub device code, token in the Keychain
+cd your-app && ~/.warmbuild/bin/warmbuild start   # LaunchAgent + ~/.warmbuild/warmbuild.xcconfig
 export XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig"   # for xcodebuild; restart Xcode once
 ~/.warmbuild/bin/warmbuild status                      # hits, misses and MB of the last build
 ```
