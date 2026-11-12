@@ -56,10 +56,11 @@ if (start.status !== 0) {
   disable(`the cache server did not start (see ${paths.log})`);
 }
 
-const flags = spawnSync(process.execPath, [client, "flags", ...common, "--cas-path", paths.cas, "--workspace", process.env.GITHUB_WORKSPACE ?? process.cwd()], {
+const flags = spawnSync(process.execPath, [client, "flags", ...common, "--cas-path", paths.cas, "--workspace", input("workspace") || process.env.GITHUB_WORKSPACE || process.cwd(), "--link"], {
   encoding: "utf8",
 });
 if (flags.status !== 0) disable("could not compute the xcodebuild settings");
+if (flags.stderr.trim()) console.log(`::warning title=Warmbuild::${flags.stderr.trim()}`);
 
 const previous = process.env.XCODE_XCCONFIG_FILE;
 const lines = flags.stdout

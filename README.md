@@ -27,6 +27,7 @@ and set it up at the [Warmbuild dashboard](https://warmbuild-dev.mikitahimpel.co
 | --- | --- | --- |
 | `url` | the Warmbuild cache API | Cache API URL |
 | `token` | none | A Warmbuild API token, for runners without GitHub OIDC |
+| `workspace` | `$GITHUB_WORKSPACE` | The checkout directory, when `actions/checkout` uses `path:` |
 
 | Output | |
 | --- | --- |

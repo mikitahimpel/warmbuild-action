@@ -12,6 +12,10 @@ inputs:
     description: "A Warmbuild API token, for runners without GitHub OIDC. Leave empty on GitHub-hosted runners (the job needs `permissions: id-token: write`)."
     required: false
     default: ""
+  workspace:
+    description: The checkout whose paths are mapped to /tmp/warmbuild/src. Set it when the repository is checked out below the workspace (actions/checkout `path:`).
+    required: false
+    default: ""
 outputs:
   enabled:
     description: "'true' when the cache server runs and xcodebuild uses it"
