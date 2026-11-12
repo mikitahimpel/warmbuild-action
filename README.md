@@ -29,6 +29,49 @@ environment variables. Set `report: false` to turn it off. `xcodebuild test` alw
 report needs; a build-only step (`xcodebuild build`) keeps its log only in a result bundle, so pass
 it `-resultBundlePath "$RUNNER_TEMP/build.xcresult"` to have it counted.
 
+## Test selection on pull requests
+
+With `select-tests: true`, a pull request runs only the tests its change can reach; pushes run
+everything, so the default branch catches anything selection skipped. Pass the arguments to
+`xcodebuild test` (or `swift test --filter` for a package):
+
+```yaml
+      - uses: mikitahimpel/warmbuild-action@v1
+        id: warmbuild
+        with:
+          select-tests: true
+      - if: steps.warmbuild.outputs.tests != 'none'
+        run: xcodebuild test -scheme App -destination 'platform=iOS Simulator,name=iPhone 17' $WARMBUILD_ONLY_TESTING
+```
+
+The Action compares the pull request with its base branch and reads the Swift files below each
+project and package (`*.xcodeproj`, `project.yml`, `Package.swift`) for the types they declare and
+name. A test file runs when it changed, or when it names a type from a changed file, or a type
+whose file names one (two references). UI tests (files using `XCUIApplication`) run on any app
+change. Also selected: suites that failed or flaked on the default branch lately, and a 5% sample
+of the rest. Everything runs when a project or package manifest, `Package.resolved`, an
+`.xcconfig`, a scheme, test plan, entitlements, `Info.plist` or a workflow that runs tests
+changes, when more than 40 files change, or when a resource outside a test directory changes. The
+job summary lists what ran and why, and the dashboard shows tests run, minutes saved and misses
+(default-branch failures in a test a merged pull request skipped). Test targets are named after
+their directory (`…Tests`).
+
+| Selection input | Default | |
+| --- | --- | --- |
+| `select-tests` | `false` | `true` selects tests on pull requests |
+| `select-tests-ignore` | none | Paths that never affect tests, one regular expression per line |
+| `select-tests-always` | none | Targets or `Target/Suite` ids to run on every pull request |
+| `select-tests-sample` | `0.05` | Share of the other test files to run anyway |
+
+| Selection output | |
+| --- | --- |
+| `tests` | `all`, `some` or `none` |
+| `only-testing` | `-only-testing:Target/Suite …` for xcodebuild (empty when everything runs), also `$WARMBUILD_ONLY_TESTING` |
+| `swift-filter` | the same as a `swift test --filter` pattern |
+
+On a Mac, `warmbuild tests --changed` prints the same arguments for the working tree:
+`xcodebuild test … $(warmbuild tests --changed)`.
+
 ## On a developer's Mac
 
 The same cache for local Xcode builds, read-only: what CI compiled on the default branch.

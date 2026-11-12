@@ -26,9 +26,20 @@ is optional: a build must never fail or wait because of it.
   to the project or pass them on the command line.
 - Use the same `-configuration` and `-destination` as the CI workflow that fills the cache (look in
   `.github/workflows`). Another configuration, platform or architecture compiles other keys.
-- Running only affected tests, once `warmbuild tests` exists (`warmbuild --help` lists it):
-  `xcodebuild test … $(warmbuild tests --changed)`. If the command is missing or fails, run the
-  tests you would have run anyway.
+
+## Running only the affected tests
+
+- `xcodebuild test … $(warmbuild tests --changed)` runs the tests that the diff reaches. The diff is
+  against the merge base with origin's default branch, and it includes uncommitted and untracked
+  files. Use this command when `warmbuild --help` lists `tests`.
+- Empty output means run everything. When nothing is reached, the output is `-skip-testing` for
+  every target. Both are correct; don't override them. The reason is on stderr, one line.
+- For Swift packages, `--format swift` prints a `--filter` pattern, which is empty when everything
+  runs: `p=$(warmbuild tests --changed --format swift); swift test ${p:+--filter "$p"}`. To compare with
+  another ref, add `--base <ref>`. To keep a target or suite running every time, add
+  `--always Target[/Suite]`.
+- Before you finish a change, run the full test suite once, or say you didn't.
+- If the command is missing or fails, run the tests you would have run anyway.
 
 ## After building
 

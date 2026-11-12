@@ -8,5 +8,8 @@ This Mac shares compiled modules with CI through Warmbuild. Before `xcodebuild`:
   same configuration and destination as CI.
 - Afterwards, `warmbuild status` shows the last build's hits and misses. Low hits: different Xcode
   than CI, different configuration or destination, or a branch far from the default branch.
+- Affected tests only: `xcodebuild test … $(warmbuild tests --changed)` (diff against the
+  default branch's merge base, uncommitted files included). Empty output runs everything. Run the
+  full suite once before you finish.
 - Never read or print the Warmbuild token. On any Warmbuild error, `warmbuild stop` and build
   again without `XCODE_XCCONFIG_FILE`.

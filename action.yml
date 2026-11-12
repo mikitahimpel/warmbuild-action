@@ -20,6 +20,22 @@ inputs:
     description: "'false' skips the CI report: where the job's time went, read from Xcode's build logs and result bundles in the post step (names, durations, counts and sizes; never source or logs)."
     required: false
     default: "true"
+  select-tests:
+    description: "'true' selects the tests a pull request can reach (see outputs); pushes and other events run everything. Pass `$WARMBUILD_ONLY_TESTING` to `xcodebuild test`."
+    required: false
+    default: "false"
+  select-tests-ignore:
+    description: Changed paths that never affect tests, one regular expression per line (documentation and tooling are ignored already)
+    required: false
+    default: ""
+  select-tests-always:
+    description: Test targets or Target/Suite ids to run on every pull request, one per line
+    required: false
+    default: ""
+  select-tests-sample:
+    description: Share of the other test files to run anyway, so every test runs on some pull requests
+    required: false
+    default: "0.05"
 outputs:
   enabled:
     description: "'true' when the cache server runs and xcodebuild uses it"
@@ -27,6 +43,12 @@ outputs:
     description: The xcconfig with the cache settings (also exported as XCODE_XCCONFIG_FILE)
   stats:
     description: Path of the JSON file with the server's counters, updated while the job runs
+  tests:
+    description: "With select-tests: 'all', 'some' or 'none' (nothing the change reaches; skip the test step or pass only-testing, which skips every target)"
+  only-testing:
+    description: With select-tests, the -only-testing / -skip-testing arguments for xcodebuild (empty when everything runs); also in WARMBUILD_ONLY_TESTING
+  swift-filter:
+    description: With select-tests, a `swift test --filter` pattern for the selected tests (empty when everything runs)
 runs:
   using: node24
   main: action/main.mjs

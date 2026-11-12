@@ -40,10 +40,71 @@ state("url", input("url"));
 state("workspace", input("workspace") || process.env.GITHUB_WORKSPACE || process.cwd());
 state("report", input("report") || "true");
 
+// Test selection, on pull requests only: the default branch runs everything and catches what a
+// pull request skipped. Any failure here runs every test.
+function selectTests() {
+  if (input("select-tests") !== "true") return;
+  try {
+    trySelectTests();
+  } catch (e) {
+    console.log(`::warning title=Warmbuild::test selection failed (${e?.message ?? e}); every test runs`);
+    output("tests", "all");
+  }
+}
+
+function trySelectTests() {
+  const pullRequest = /^pull_request/.test(process.env.GITHUB_EVENT_NAME ?? "");
+  const everything = (why) => {
+    console.log(`Warmbuild: every test runs (${why})`);
+    output("tests", "all");
+    output("only-testing", "");
+    output("swift-filter", "");
+    append("GITHUB_ENV", "WARMBUILD_ONLY_TESTING=");
+  };
+  if (!pullRequest) return everything("not a pull request");
+  const lines = (name) => input(name).split("\n").map((l) => l.trim()).filter(Boolean);
+  const selectionFile = join(home, "selection.json");
+  const r = spawnSync(
+    process.execPath,
+    [
+      client,
+      "tests",
+      "--repo",
+      input("workspace") || process.env.GITHUB_WORKSPACE || process.cwd(),
+      "--format",
+      "json",
+      "--out",
+      selectionFile,
+      ...(input("url") ? ["--url", input("url")] : []),
+      "--sample",
+      input("select-tests-sample") || "0.05",
+      ...lines("select-tests-ignore").flatMap((r) => ["--ignore", r]),
+      ...lines("select-tests-always").flatMap((a) => ["--always", a]),
+      ...(process.env.GITHUB_STEP_SUMMARY ? ["--summary", process.env.GITHUB_STEP_SUMMARY] : []),
+    ],
+    { encoding: "utf8", env, timeout: 120_000, maxBuffer: 64 * 1024 * 1024 },
+  );
+  if (r.stderr?.trim()) console.log(r.stderr.trim());
+  let s;
+  try {
+    s = JSON.parse(r.stdout);
+  } catch {
+    return everything(`selection failed${r.status ? ` (exit ${r.status})` : ""}`);
+  }
+  append("GITHUB_ENV", `WARMBUILD_SELECTION=${selectionFile}`);
+  if (s.all) return everything(s.reason);
+  const args = s.xcodebuild.join(" ");
+  output("tests", s.ids.length ? "some" : "none");
+  output("only-testing", args);
+  output("swift-filter", s.swiftFilter ?? "");
+  append("GITHUB_ENV", `WARMBUILD_ONLY_TESTING=${args}`);
+}
+
 const token = input("token");
 if (token) console.log(`::add-mask::${token}`);
 const env = { ...process.env, ...(token ? { WARMBUILD_TOKEN: token } : {}) };
 const common = ["--socket", paths.socket];
+selectTests();
 
 const out = openSync(paths.log, "a");
 const start = spawnSync(
