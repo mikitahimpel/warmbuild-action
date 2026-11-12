@@ -15,9 +15,9 @@ is optional: builds work the same without it.
 | --- | --- |
 | `curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh \| sh` | Installs `~/.warmbuild/bin/warmbuild` (macOS, Node 20+). Re-run to update. |
 | `warmbuild login` | GitHub device flow; the user enters a code in a browser. Stores a read-only token in the macOS Keychain. Interactive: the user runs it. |
-| `warmbuild start` | In a repository: starts the cache server (LaunchAgent), writes `~/.warmbuild/warmbuild.xcconfig`, maps this checkout and its worktrees the way CI does. |
+| `warmbuild start` | In a repository: starts the cache server (LaunchAgent), writes `~/.warmbuild/warmbuild.xcconfig`, maps this checkout the way CI does. |
 | `warmbuild stop` | Stops the server and empties the xcconfig; builds then run without the cache. |
-| `warmbuild link [dir]` | Maps the checkout at `dir` (default `.`) and points `/tmp/warmbuild/src` at it, which is what `#filePath` and the debugger resolve to. |
+| `warmbuild link [dir]` | Makes the checkout at `dir` (default `.`) the mapped one: one checkout at a time, as on CI. Builds in other checkouts work but do not share CI's keys. Also points `/tmp/warmbuild/src` there, which `#filePath` and the debugger resolve to. |
 | `warmbuild run -- xcodebuild …` | One build with its own short-lived server, without the LaunchAgent. |
 
 `warmbuild` may not be on PATH; `~/.warmbuild/bin/warmbuild` is the same command.
@@ -45,7 +45,7 @@ build. Exit code 0 means on, 1 means off. `warmbuild status --json` prints:
 | `mode` | `read-only` or `read-write` |
 | `account`, `tokenExpiresAt` | signed-in account, or `null` |
 | `sourceRoot` | where `/tmp/warmbuild/src` points |
-| `checkouts`, `unmappable` | mapped checkouts; checkouts with a space in the path, which cannot be mapped |
+| `checkouts`, `unmappable` | the mapped checkout (zero or one); a linked checkout with a space in its path, which cannot be mapped |
 | `lastBuild` | `hits`, `misses`, `hitRate` (0–1), `remoteHits` (from Warmbuild), `localHits` (this Mac), `mbDown`, `mbUp`, `httpFailures`, `startedAt`, `endedAt` (ms) |
 
 The last build is the last burst of cache traffic, split at 20 s without lookups. A miss is a
