@@ -21,5 +21,7 @@ cache from what CI built.
   branch reaches (empty output: all tests).
 - CI report data, read-only, `--json` on each: `warmbuild builds`, `warmbuild report [--job <id>]`,
   `warmbuild findings`, `warmbuild why-miss <target>`, `warmbuild tests --slow|--flaky|--failing`.
+- No shell: the MCP server `https://warmbuild-mcp-dev.mikitahimpel.com/mcp` has the same CI report
+  data as tools (the user adds it to the agent's client).
 - `warmbuild login` is interactive and the user's to run. Never read or print the Warmbuild token.
 - If a Warmbuild command or the cache fails, `warmbuild stop` and build without it.

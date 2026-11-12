@@ -92,6 +92,11 @@ repository defaults to the checkout's GitHub origin; `--repo owner/name` overrid
 | `warmbuild tests --slow\|--flaky\|--failing [--limit <n>]` | the slowest tests, tests that passed only on a retry, or tests that failed every run, over recent CI jobs |
 | `warmbuild why-miss <target> [--jobs <n>]` | a target's hits and misses across recent jobs, and which of Xcode, runner, ref, event and commit differ from the last job without misses; it cannot see inside cache keys |
 
+No shell? Use the MCP server: the same CI report data, read-only, as the tools `list_repositories`,
+`latest_ci_report`, `why_cache_miss`, `tests`, `pr_test_selection` and `build_insights` at
+`https://warmbuild-mcp-dev.mikitahimpel.com/mcp` (remote, Streamable HTTP, GitHub sign-in; the user
+adds it to the client).
+
 A request that fails prints `warmbuild: <reason>` on stderr and exits 1 (not signed in, no
 repository, unknown job).
 

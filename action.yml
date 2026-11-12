@@ -17,7 +17,7 @@ inputs:
     required: false
     default: ""
   report:
-    description: "'false' skips the CI report: where the job's time went, read from Xcode's build logs and result bundles in the post step (names, durations, counts and sizes; never source or logs)."
+    description: "'false' skips the CI report: where the job's time went, read from Xcode's build logs and result bundles in the post step (names, durations, counts and sizes; never source or logs), and any crash during the tests, symbolicated on the runner."
     required: false
     default: "true"
   report-budget:
