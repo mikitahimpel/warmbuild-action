@@ -24,15 +24,16 @@ is optional: builds work the same without it.
 
 ## Building with the cache
 
-If the project's xcconfig has `#include? "warmbuild.local.xcconfig"` (`warmbuild start` offers to
-add it), plain `xcodebuild …` uses the cache. Otherwise xcodebuild reads the settings from
-`XCODE_XCCONFIG_FILE`:
+Pass `XCODE_XCCONFIG_FILE`: it reaches every target, Swift package targets included.
+`#include? "warmbuild.local.xcconfig"` in the project's xcconfig reaches only the project's own
+targets, so plain `xcodebuild …` is enough only for a project without Swift packages
+(`warmbuild doctor` says which):
 
 ```sh
 XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig" xcodebuild …
 ```
 
-Passing it is harmless when the project includes it too. When a build hits little,
+Passing it is harmless when the project includes it too, so always pass it. When a build hits little,
 `warmbuild status` names the likely cause and `warmbuild doctor` lists every check with its fix. Keys equal CI's only
 for the same Xcode version, configuration, destination and architecture as the CI job that filled
 the cache. A `-derivedDataPath` or worktree below `/tmp` (or `/private/tmp`) loses hits: use

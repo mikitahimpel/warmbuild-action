@@ -13,8 +13,8 @@ cache from what CI built.
 - `warmbuild status` (`--json`): on or off (exit code 0 or 1), account, last build's hits, misses,
   hit rate and MB, and each worktree's last build. `warmbuild start` in the repository turns the
   cache on for all its worktrees; `warmbuild stop` turns it off, and builds then run without it.
-- Building with it: plain `xcodebuild …` when the project includes `warmbuild.local.xcconfig`,
-  else `XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig" xcodebuild …` (always safe). A
+- Building with it: `XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig" xcodebuild …`
+  (always safe; the project's include line alone does not reach Swift package targets). A
   low hit rate: `warmbuild doctor` prints the cause and the fix. Keep
   `-derivedDataPath` out of `/tmp` (e.g. `~/Library/Caches/<name>/dd`): there it loses hits.
 - `xcodebuild test … $(warmbuild tests --changed)`: only the tests the diff against the default
