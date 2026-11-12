@@ -20,6 +20,15 @@ The Action starts a small cache server and exports `XCODE_XCCONFIG_FILE`, so eve
 `xcodebuild` in the job uses it. If anything goes wrong, the build runs without the cache. Hits,
 misses and bytes appear in the job summary.
 
+After the job, the post step also reports where the job's minutes went: it reads the build logs and
+result bundles Xcode wrote during the job (`Logs/Build/*.xcactivitylog`, `*.xcresult`) and the asset
+catalogs in the checkout, writes a summary with findings to the job summary, and uploads it to the
+dashboard. The report holds task and target names, file names without their directories, test
+names, durations, counts and sizes. It never holds source code, command lines, log output or
+environment variables. Set `report: false` to turn it off. `xcodebuild test` always leaves what the
+report needs; a build-only step (`xcodebuild build`) keeps its log only in a result bundle, so pass
+it `-resultBundlePath "$RUNNER_TEMP/build.xcresult"` to have it counted.
+
 Your GitHub account or organisation needs the Warmbuild GitHub App and an approved account. Sign in
 and set it up at the [Warmbuild dashboard](https://warmbuild-dev.mikitahimpel.com) (early access).
 
@@ -28,6 +37,7 @@ and set it up at the [Warmbuild dashboard](https://warmbuild-dev.mikitahimpel.co
 | `url` | the Warmbuild cache API | Cache API URL |
 | `token` | none | A Warmbuild API token, for runners without GitHub OIDC |
 | `workspace` | `$GITHUB_WORKSPACE` | The checkout directory, when `actions/checkout` uses `path:` |
+| `report` | `true` | `false` skips the CI report (summary and upload) |
 
 | Output | |
 | --- | --- |

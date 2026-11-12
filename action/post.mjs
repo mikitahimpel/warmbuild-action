@@ -45,6 +45,26 @@ if (s) {
     );
   }
 }
+// Where the job's time went, from the logs and result bundles Xcode wrote since the main step.
+if (state("report") !== "false") {
+  spawnSync(
+    process.execPath,
+    [
+      client,
+      "report",
+      "--since",
+      state("started") || "0",
+      "--workspace",
+      state("workspace") || process.cwd(),
+      ...(state("url") ? ["--url", state("url")] : []),
+      ...(stats ? ["--stats", stats] : []),
+      ...(process.env.GITHUB_STEP_SUMMARY ? ["--summary", process.env.GITHUB_STEP_SUMMARY] : []),
+      "--upload",
+    ],
+    { stdio: "inherit", timeout: 180_000 },
+  );
+}
+
 if (log && existsSync(log)) {
   const errors = readFileSync(log, "utf8").split("\n").filter((l) => /\b(ERROR|WARN)\b/.test(l)).slice(-5);
   for (const l of errors) console.log(`Warmbuild log: ${l}`);

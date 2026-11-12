@@ -35,6 +35,10 @@ const disable = (why) => {
 process.on("uncaughtException", (e) => disable(`setup failed: ${e?.message ?? e}`));
 
 mkdirSync(home, { recursive: true });
+state("started", String(Date.now()));
+state("url", input("url"));
+state("workspace", input("workspace") || process.env.GITHUB_WORKSPACE || process.cwd());
+state("report", input("report") || "true");
 
 const token = input("token");
 if (token) console.log(`::add-mask::${token}`);
