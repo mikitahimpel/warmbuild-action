@@ -15,9 +15,9 @@ is optional: builds work the same without it.
 | --- | --- |
 | `curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh \| sh` | Installs `~/.warmbuild/bin/warmbuild` (macOS, Node 20+). Re-run to update. |
 | `warmbuild login` | GitHub device flow; the user enters a code in a browser. Stores a read-only token in the macOS Keychain. Interactive: the user runs it. |
-| `warmbuild start` | In a repository: starts the cache server (LaunchAgent), writes `~/.warmbuild/warmbuild.xcconfig`, maps this checkout the way CI does. |
+| `warmbuild start` | In a repository: starts the cache server (LaunchAgent), writes `~/.warmbuild/warmbuild.xcconfig`, and maps every worktree of the repository the way CI maps its checkout, so builds in any worktree (also several at once) share CI's keys. Once per repository. |
 | `warmbuild stop` | Stops the server and empties the xcconfig; builds then run without the cache. |
-| `warmbuild link [dir]` | Makes the checkout at `dir` (default `.`) the mapped one: one checkout at a time, as on CI. Builds in other checkouts work but do not share CI's keys. Also points `/tmp/warmbuild/src` there, which `#filePath` and the debugger resolve to. |
+| `warmbuild link [dir]` | Links the repository at `dir` (default `.`) too, and points `/tmp/warmbuild/src` at this checkout. `#filePath` and the debugger resolve through that link; the daemon also moves it to the checkout of each `xcodebuild` it sees start. |
 | `warmbuild run -- xcodebuild …` | One build with its own short-lived server, without the LaunchAgent. |
 
 `warmbuild` may not be on PATH; `~/.warmbuild/bin/warmbuild` is the same command.
@@ -32,12 +32,14 @@ XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig" xcodebuild …
 
 If `XCODE_XCCONFIG_FILE` is already exported, plain `xcodebuild …` uses it. Keys equal CI's only
 for the same Xcode version, configuration, destination and architecture as the CI job that filled
-the cache.
+the cache. A `-derivedDataPath` or worktree below `/tmp` (or `/private/tmp`) loses hits: use
+Xcode's default DerivedData or a folder in the home directory (e.g. `~/Library/Caches/<name>/dd`). `#filePath` is `/tmp/warmbuild/src/…` in every
+worktree; tests that find files through it read the checkout that link points at.
 
 ## Status: hits and misses
 
-`warmbuild status` prints whether the cache is on, the account, the mapped checkouts and the last
-build. Exit code 0 means on, 1 means off. `warmbuild status --json` prints:
+`warmbuild status` prints whether the cache is on, the account, the linked repositories and their
+projects, the last build of all worktrees together and each worktree's own last build. Exit code 0 means on, 1 means off. `warmbuild status --json` prints:
 
 | Field | |
 | --- | --- |
@@ -45,8 +47,10 @@ build. Exit code 0 means on, 1 means off. `warmbuild status --json` prints:
 | `mode` | `read-only` or `read-write` |
 | `account`, `tokenExpiresAt` | signed-in account, or `null` |
 | `sourceRoot` | where `/tmp/warmbuild/src` points |
-| `checkouts`, `unmappable` | the mapped checkout (zero or one); a linked checkout with a space in its path, which cannot be mapped |
-| `lastBuild` | `hits`, `misses`, `hitRate` (0–1), `remoteHits` (from Warmbuild), `localHits` (this Mac), `mbDown`, `mbUp`, `httpFailures`, `startedAt`, `endedAt` (ms) |
+| `checkouts`, `unmappable` | every mapped worktree; worktrees with a space in their path, which cannot be mapped |
+| `repositories`, `projects`, `conflicts` | linked repositories (git directories); project name → directory below the checkout root; names at two places in as many worktrees each, not mapped |
+| `worktrees` | each worktree: `path`, `counted` (has its own socket, so its builds are counted apart), `lastBuild` (`hits`, `misses`, `hitRate`, `startedAt`, `endedAt`) or `null` |
+| `lastBuild` | all worktrees together: `hits`, `misses`, `hitRate` (0–1), `remoteHits` (from Warmbuild), `localHits` (this Mac), `mbDown`, `mbUp`, `httpFailures`, `startedAt`, `endedAt` (ms) |
 
 The last build is the last burst of cache traffic, split at 20 s without lookups. A miss is a
 compilation whose key is in neither this Mac's cache nor Warmbuild's. Keys differ when the Xcode
