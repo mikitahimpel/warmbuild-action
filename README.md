@@ -34,4 +34,6 @@ and set it up at the [Warmbuild dashboard](https://warmbuild-dev.mikitahimpel.co
 | `xcconfig` | path of the generated xcconfig |
 | `stats` | path of a JSON file with the cache counters |
 
-This repository holds released builds only.
+This repository holds released builds only. MIT licensed; the bundled client in
+`action/client/warmbuild.mjs` includes third-party packages under their own licenses (MIT,
+Apache-2.0, BSD-3-Clause), whose notices are kept at the end of that file.
