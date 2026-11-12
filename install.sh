@@ -1,15 +1,17 @@
 #!/bin/sh
 # Installs the Warmbuild CLI for local Xcode builds:
 #   curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh | sh
-# Downloads warmbuild.mjs from a pinned release of mikitahimpel/warmbuild-action, checks it against
-# the SHA-256 published beside it, and installs it to ~/.warmbuild/bin. No sudo. Run it again to
+# Downloads warmbuild.mjs from a pinned release of mikitahimpel/warmbuild-action (or, while that
+# release is not published yet, the latest one), checks it against the SHA-256 published beside it,
+# and installs it to ~/.warmbuild/bin. No sudo. Run it again to
 # update. Your shell profile is left alone unless you pass --add-to-path:
 #   curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh | sh -s -- --add-to-path
 set -eu
 
-version="1.7.1"
+version="1.8.0"
 repo="mikitahimpel/warmbuild-action"
 base="${WARMBUILD_DOWNLOAD_URL:-https://github.com/$repo/releases/download/v$version}"
+latest="${WARMBUILD_LATEST_URL:-https://github.com/$repo/releases/latest/download}"
 home="${WARMBUILD_HOME:-$HOME/.warmbuild}"
 bin="$home/bin"
 
@@ -53,8 +55,14 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT INT TERM
 
 printf 'Downloading warmbuild %s…\n' "$version"
+# The bundle and its checksum always come from the same release.
+if ! curl -fsSL --retry 3 -o "$tmp/warmbuild.mjs.sha256" "$base/warmbuild.mjs.sha256"; then
+  printf 'warmbuild %s is not published yet; installing the latest release\n' "$version"
+  base="$latest"
+  version="(latest release)"
+  curl -fsSL --retry 3 -o "$tmp/warmbuild.mjs.sha256" "$base/warmbuild.mjs.sha256" || fail "could not download $base/warmbuild.mjs.sha256"
+fi
 curl -fsSL --retry 3 -o "$tmp/warmbuild.mjs" "$base/warmbuild.mjs" || fail "could not download $base/warmbuild.mjs"
-curl -fsSL --retry 3 -o "$tmp/warmbuild.mjs.sha256" "$base/warmbuild.mjs.sha256" || fail "could not download $base/warmbuild.mjs.sha256"
 expected="$(awk '{print $1}' "$tmp/warmbuild.mjs.sha256")"
 actual="$(sha256 "$tmp/warmbuild.mjs")"
 case "$expected" in

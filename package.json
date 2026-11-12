@@ -1,10 +1,10 @@
 {
   "name": "warmbuild",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "Warmbuild: remote compilation cache for Xcode, for CI and developers' Macs",
   "license": "MIT",
   "type": "module",
   "bin": { "warmbuild": "action/client/warmbuild.mjs" },
-  "files": ["action", "skills"],
+  "files": ["action", "skills", "test-cache"],
   "engines": { "node": ">=20" }
 }

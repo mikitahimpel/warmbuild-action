@@ -61,12 +61,15 @@ whose file names one (two references). UI tests (files using `XCUIApplication`) 
 change. Also selected: suites that failed or flaked on the default branch lately, and a 5% sample
 of the rest. Everything runs when a project or package manifest, `Package.resolved`, an
 `.xcconfig`, a scheme, test plan, entitlements, `Info.plist` or a workflow that runs tests
-changes, when more than 40 files change, or when a resource outside a test directory changes. The
-`only-testing` names only test targets of the Xcode project (with `select-tests-scheme`, of that
-scheme, from `project.yml` or the shared `.xcscheme` and its test plans): `xcodebuild` refuses a
-whole run that names a target its scheme does not hold. Selected tests of Swift package test
-targets are in `swift-filter` only. When a selected test target is neither the project's nor a
-package's, or the project cannot be read, `xcodebuild` runs everything. The
+changes, when more than 40 files change, or when a resource outside a test directory changes. An
+XcodeGen `project.yml` change confined to target blocks runs only the tests of the changed targets
+and of the targets that depend on them; a change anywhere else in it (settings, schemes, packages,
+options, includes) runs everything. `only-testing` names only test targets of the Xcode project
+(with `select-tests-scheme`, of that scheme, from `project.yml` or the shared `.xcscheme` and its
+test plans): `xcodebuild` refuses a whole run that names a target its scheme does not hold.
+Selected tests of Swift package test targets are in `swift-filter` only. When a selected test
+target is neither the project's nor a package's, or the project cannot be read, `xcodebuild` runs
+everything. The
 job summary lists what ran and why, and the dashboard shows tests run, minutes saved and misses
 (default-branch failures in a test a merged pull request skipped). Test targets are named after
 their directory (`…Tests`).
@@ -87,6 +90,41 @@ their directory (`…Tests`).
 
 On a Mac, `warmbuild tests --changed` prints the same arguments for the working tree:
 `xcodebuild test … $(warmbuild tests --changed)`.
+
+## Test-result cache
+
+A test target whose built products (the test bundle, its host app and every product it loads), the
+destination, Xcode and its test settings are the same as in an earlier passing run is not run
+again; the job summary says which run it reused. Add the `test-cache` step between
+`build-for-testing` and `test-without-building`:
+
+```yaml
+      - run: xcodebuild build-for-testing -scheme App -destination "id=$UDID" -derivedDataPath "$RUNNER_TEMP/dd"
+      - uses: mikitahimpel/warmbuild-action/test-cache@v1
+        id: tests
+        with:
+          derived-data: ${{ runner.temp }}/dd
+          destination: id=${{ env.UDID }}
+      - if: steps.tests.outputs.tests != 'none'
+        run: xcodebuild test-without-building -scheme App -destination "id=$UDID" -derivedDataPath "$RUNNER_TEMP/dd" $WARMBUILD_ONLY_TESTING
+```
+
+`WARMBUILD_ONLY_TESTING` then holds test selection's arguments, the step's `args` and a
+`-skip-testing` per reused target; `tests` is `none` when every target was reused, so the
+Simulator need not boot. Only passes are stored: a target that ran whole with no failed or flaky
+test. Results from the default branch count for every job, a pull request's only for its own later
+runs. `cache-tests: false` or `[warmbuild full tests]` in the commit message (or a pull request's
+title or body) runs everything; passes are still recorded.
+
+| Test cache input | Default | |
+| --- | --- | --- |
+| `derived-data` | none | The `-derivedDataPath` of build-for-testing |
+| `xctestrun` | newest | The `.xctestrun`, when there are several |
+| `destination` | required | The `-destination` the tests run on (its runtime and device type are part of each key) |
+| `args` | none | The workflow's own `-only-testing` / `-skip-testing` arguments |
+| `cache-tests` | `true` | `false` runs every target |
+| `extra-key` | none | Anything else that changes results, made part of every key |
+| `workspace` | the workspace | The checkout, when elsewhere |
 
 ## On a developer's Mac
 
