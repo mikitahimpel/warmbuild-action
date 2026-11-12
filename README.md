@@ -29,6 +29,22 @@ environment variables. Set `report: false` to turn it off. `xcodebuild test` alw
 report needs; a build-only step (`xcodebuild build`) keeps its log only in a result bundle, so pass
 it `-resultBundlePath "$RUNNER_TEMP/build.xcresult"` to have it counted.
 
+## On a developer's Mac
+
+The same cache for local Xcode builds, read-only: what CI compiled on the default branch.
+
+```sh
+cd your-app
+npx -y github:mikitahimpel/warmbuild-action#v1 login   # GitHub device code, token in the Keychain
+npx -y github:mikitahimpel/warmbuild-action#v1 start   # LaunchAgent + ~/.warmbuild/warmbuild.xcconfig
+export XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig"   # for xcodebuild; restart Xcode once
+~/.warmbuild/bin/warmbuild status                      # hits, misses and MB of the last build
+```
+
+For AI coding agents, `skills/warmbuild/SKILL.md` is a skill (copy it to `~/.claude/skills/warmbuild/`
+or a repository's `.claude/skills/warmbuild/`), and `skills/warmbuild/AGENTS-snippet.md` is the same
+for an `AGENTS.md`.
+
 Your GitHub account or organisation needs the Warmbuild GitHub App and an approved account. Sign in
 and set it up at the [Warmbuild dashboard](https://warmbuild-dev.mikitahimpel.com) (early access).
 
