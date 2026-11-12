@@ -8,7 +8,7 @@
 #   curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh | sh -s -- --add-to-path
 set -eu
 
-version="1.9.0"
+version="1.9.1"
 repo="mikitahimpel/warmbuild-action"
 base="${WARMBUILD_DOWNLOAD_URL:-https://github.com/$repo/releases/download/v$version}"
 latest="${WARMBUILD_LATEST_URL:-https://github.com/$repo/releases/latest/download}"

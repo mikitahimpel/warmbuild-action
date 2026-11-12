@@ -1,6 +1,6 @@
 {
   "name": "warmbuild",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "Warmbuild: remote compilation cache for Xcode, for CI and developers' Macs",
   "license": "MIT",
   "type": "module",
