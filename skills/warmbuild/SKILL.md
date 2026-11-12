@@ -13,7 +13,7 @@ is optional: builds work the same without it.
 
 | Command | What it does |
 | --- | --- |
-| `curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh \| sh` | Installs `~/.warmbuild/bin/warmbuild` (macOS, Node 20+). Re-run to update. |
+| `curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh \| sh` | Installs `~/.warmbuild/bin/warmbuild` (macOS, Node 20+), and in a repository also starts the cache. Without a terminal it does not sign in or edit the shell profile; it prints those steps. The daemon updates itself daily; `warmbuild update` does it now. |
 | `warmbuild login` | GitHub device flow; the user enters a code in a browser. Stores a read-only token in the macOS Keychain. Interactive: the user runs it. |
 | `warmbuild start` | In a repository: starts the cache server (LaunchAgent), writes `~/.warmbuild/warmbuild.xcconfig`, and maps every worktree of the repository the way CI maps its checkout, so builds in any worktree (also several at once) share CI's keys. Once per repository. |
 | `warmbuild stop` | Stops the server and empties the xcconfig; builds then run without the cache. |
@@ -24,13 +24,16 @@ is optional: builds work the same without it.
 
 ## Building with the cache
 
-xcodebuild reads the cache settings from `XCODE_XCCONFIG_FILE`:
+If the project's xcconfig has `#include? "warmbuild.local.xcconfig"` (`warmbuild start` offers to
+add it), plain `xcodebuild …` uses the cache. Otherwise xcodebuild reads the settings from
+`XCODE_XCCONFIG_FILE`:
 
 ```sh
 XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig" xcodebuild …
 ```
 
-If `XCODE_XCCONFIG_FILE` is already exported, plain `xcodebuild …` uses it. Keys equal CI's only
+Passing it is harmless when the project includes it too. When a build hits little,
+`warmbuild status` names the likely cause and `warmbuild doctor` lists every check with its fix. Keys equal CI's only
 for the same Xcode version, configuration, destination and architecture as the CI job that filled
 the cache. A `-derivedDataPath` or worktree below `/tmp` (or `/private/tmp`) loses hits: use
 Xcode's default DerivedData or a folder in the home directory (e.g. `~/Library/Caches/<name>/dd`). `#filePath` is `/tmp/warmbuild/src/…` in every
