@@ -51,7 +51,7 @@ if (state("report") !== "false") {
     process.execPath,
     [
       client,
-      "report",
+      "ci-report",
       "--since",
       state("started") || "0",
       "--workspace",

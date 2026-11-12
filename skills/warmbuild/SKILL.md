@@ -71,6 +71,22 @@ xcodebuild test … $(warmbuild tests --changed)
 - `--base <ref>`, `--depth 2`, `--max-files 40`, `--ignore <regex>`, `--always Target[/Suite]`
   (always run), `--no-hints` (skip recent default-branch failures, which come from Warmbuild).
 
+## CI reports
+
+Read-only views of the account's CI reports (names, durations, counts; no source or logs). The
+repository defaults to the checkout's GitHub origin; `--repo owner/name` overrides it. All take
+`--json`; shapes are in the Warmbuild docs (`docs/dev-cache.md`, "CI reports from the command line").
+
+| Command | Output |
+| --- | --- |
+| `warmbuild builds [--branch <b>] [--limit <n>]` | recent CI jobs: id, ref, duration, cache hits/misses/rate, test results |
+| `warmbuild report [--job <id>]` | one job (default newest): time per category, targets by compile time with cache hits and misses, slowest tasks and tests |
+| `warmbuild findings` | the dashboard's findings with estimated time per job |
+| `warmbuild why-miss <target> [--jobs <n>]` | a target's hits and misses across recent jobs, and which of Xcode, runner, ref, event and commit differ from the last job without misses; it cannot see inside cache keys |
+
+A request that fails prints `warmbuild: <reason>` on stderr and exits 1 (not signed in, no
+repository, unknown job).
+
 ## Rules
 
 - Never read, print or log the token: not with `security`, not from `~/.config/warmbuild`, not
