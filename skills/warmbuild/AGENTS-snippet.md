@@ -10,6 +10,6 @@ cache from what CI built.
 - `xcodebuild test … $(warmbuild tests --changed)`: only the tests the diff against the default
   branch reaches (empty output: all tests).
 - CI report data, read-only, `--json` on each: `warmbuild builds`, `warmbuild report [--job <id>]`,
-  `warmbuild findings`, `warmbuild why-miss <target>`.
+  `warmbuild findings`, `warmbuild why-miss <target>`, `warmbuild tests --slow|--flaky|--failing`.
 - `warmbuild login` is interactive and the user's to run. Never read or print the Warmbuild token.
 - If a Warmbuild command or the cache fails, `warmbuild stop` and build without it.

@@ -61,7 +61,8 @@ if (state("report") !== "false") {
       ...(process.env.GITHUB_STEP_SUMMARY ? ["--summary", process.env.GITHUB_STEP_SUMMARY] : []),
       "--upload",
     ],
-    { stdio: "inherit", timeout: 180_000 },
+    // Reading result bundles waits for xcrun, which a fresh runner can take minutes to start.
+    { stdio: "inherit", timeout: 600_000 },
   );
 }
 
