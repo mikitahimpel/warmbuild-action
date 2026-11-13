@@ -24,8 +24,9 @@ After the job, the post step also reports where the job's minutes went: it reads
 result bundles Xcode wrote during the job (`Logs/Build/*.xcactivitylog`, `*.xcresult`) and the asset
 catalogs in the checkout, writes a summary with findings to the job summary, and uploads it to the
 dashboard. The report holds task and target names, file names without their directories, test
-names, durations, counts and sizes. It never holds source code, command lines, log output or
-environment variables. Set `report: false` to turn it off. `xcodebuild test` always leaves what the
+names, durations, counts and sizes; for type-checking, the source file's path within the checkout,
+its line and the declaration the compiler named (`getter for property 'body'`). It never holds
+source code, command lines, log output or environment variables. Set `report: false` to turn it off. `xcodebuild test` always leaves what the
 report needs; a build-only step (`xcodebuild build`) keeps its log only in a result bundle, so pass
 it `-resultBundlePath "$RUNNER_TEMP/build.xcresult"` to have it counted.
 
@@ -138,6 +139,27 @@ export XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig"   # for xcodebu
 ~/.warmbuild/bin/warmbuild status                      # hits, misses and MB of the last build
 ```
 
+### Slow type-checking
+
+When the compiler gives up on an expression ("unable to type-check this expression in reasonable
+time"), the job summary names the file and line and GitHub marks it on the pull request.
+
+On pull requests the Action also times type-checking with the compiler's own timers
+(`-warn-long-function-bodies` and `-warn-long-expression-type-checking`, from 100 ms), and the
+summary lists the slowest functions, what the pull request added against the base branch ("this
+pull request added about 1.4 s of type-checking, the most in `ListScreen.swift:97`"), and a warning
+on changed code that takes over a second. You change nothing in your project for this. What it costs:
+
+- The timers are part of the compilation cache key, so they go only to the targets whose Swift files
+  the pull request changes, and those targets compile without the cache in that job. A target with
+  more than 60 unchanged Swift files is left out (`typecheck-max-files`); the summary names it.
+- The default branch never gets them, so the cache it fills is the same as without this.
+- The timings are compiler warnings, so a target that treats warnings as errors
+  (`SWIFT_TREAT_WARNINGS_AS_ERRORS`, `-warnings-as-errors`) is left out.
+- The timers themselves cost no measurable compile time (within run-to-run noise on 7,400 lines).
+
+Set `typecheck: false` to turn timing off.
+
 For AI coding agents, `skills/warmbuild/SKILL.md` is a skill (copy it to `~/.claude/skills/warmbuild/`
 or a repository's `.claude/skills/warmbuild/`), and `skills/warmbuild/AGENTS-snippet.md` is the same
 for an `AGENTS.md`.
@@ -152,6 +174,10 @@ and set it up at the [Warmbuild dashboard](https://warmbuild-dev.mikitahimpel.co
 | `workspace` | `$GITHUB_WORKSPACE` | The checkout directory, when `actions/checkout` uses `path:` |
 | `report` | `true` | `false` skips the CI report (summary and upload) |
 | `report-budget` | `90` | Seconds the post step may spend reading result bundles; the rest is skipped and named |
+| `typecheck` | `true` | `false` turns off type-check timing on pull requests (failures are reported either way) |
+| `typecheck-threshold` | `100` | Milliseconds from which a function or expression is timed |
+| `typecheck-warn` | `1000` | Milliseconds from which changed code counts as slow (a warning on the pull request) |
+| `typecheck-max-files` | `60` | Leave out a changed target with more unchanged Swift files than this |
 
 | Output | |
 | --- | --- |

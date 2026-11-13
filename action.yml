@@ -24,6 +24,22 @@ inputs:
     description: "Seconds the CI report may spend reading result bundles (xcresulttool) in the post step. What does not fit is skipped and the report says so. On a runner whose Simulator is still busy, xcresulttool can take minutes to start; shut the Simulator down after the tests (xcrun simctl shutdown all) or raise this."
     required: false
     default: "90"
+  typecheck:
+    description: "'false' turns off type-check timing. On pull requests the Action times how long Swift takes to type-check each function and expression, only in the targets the pull request changes (those compile without the cache in that job; the default branch never gets the timers), and the CI report names the slowest and what the pull request added. Type-check failures are reported either way."
+    required: false
+    default: "true"
+  typecheck-threshold:
+    description: Milliseconds from which a function or expression is timed
+    required: false
+    default: "100"
+  typecheck-warn:
+    description: Milliseconds from which a function in changed code is called slow (a warning on the pull request)
+    required: false
+    default: "1000"
+  typecheck-max-files:
+    description: A target is timed only when it holds at most this many Swift files the pull request did not change (they compile without the cache in that job)
+    required: false
+    default: "60"
   select-tests:
     description: "'true' selects the tests a pull request can reach (see outputs); pushes and other events run everything. Pass `$WARMBUILD_ONLY_TESTING` to `xcodebuild test`."
     required: false

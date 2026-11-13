@@ -130,6 +130,42 @@ if (flags.status !== 0) disable("could not compute the xcodebuild settings");
 if (flags.stderr.trim()) console.log(`::warning title=Warmbuild::${flags.stderr.trim()}`);
 
 const previous = process.env.XCODE_XCCONFIG_FILE;
+
+// Pull requests only: the compiler's type-check timers in the targets the pull request changes
+// (`warmbuild typecheck plan` says why only there). Any failure leaves the settings as they were.
+function typecheckLines() {
+  if (!/^pull_request/.test(process.env.GITHUB_EVENT_NAME ?? "") || input("typecheck") === "false") return [];
+  try {
+    const planFile = join(home, "typecheck.json");
+    const r = spawnSync(
+      process.execPath,
+      [
+        client,
+        "typecheck",
+        "plan",
+        "--repo",
+        input("workspace") || process.env.GITHUB_WORKSPACE || process.cwd(),
+        "--out",
+        planFile,
+        "--threshold",
+        input("typecheck-threshold") || "100",
+        "--warn",
+        input("typecheck-warn") || "1000",
+        "--max-files",
+        input("typecheck-max-files") || "60",
+        ...(previous ? ["--previous-xcconfig", previous] : []),
+      ],
+      { encoding: "utf8", env, timeout: 60_000, maxBuffer: 16 * 1024 * 1024 },
+    );
+    if (r.stderr?.trim()) console.log(r.stderr.trim());
+    if (r.status !== 0) return [];
+    append("GITHUB_ENV", `WARMBUILD_TYPECHECK=${planFile}`);
+    return r.stdout.split("\n").filter((l) => l.trim());
+  } catch (e) {
+    console.log(`Warmbuild: type-check timing off (${e?.message ?? e})`);
+    return [];
+  }
+}
 const lines = flags.stdout
   .split("\n")
   .filter(Boolean)
@@ -137,7 +173,7 @@ const lines = flags.stdout
     const at = setting.indexOf("=");
     return `${setting.slice(0, at)} = ${setting.slice(at + 1)}`;
   });
-writeFileSync(paths.xcconfig, [...(previous ? [`#include "${previous}"`] : []), ...lines, ""].join("\n"));
+writeFileSync(paths.xcconfig, [...(previous ? [`#include "${previous}"`] : []), ...lines, ...typecheckLines(), ""].join("\n"));
 
 append("GITHUB_ENV", `XCODE_XCCONFIG_FILE=${paths.xcconfig}`);
 output("enabled", "true");
