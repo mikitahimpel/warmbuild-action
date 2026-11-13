@@ -90,6 +90,7 @@ repository defaults to the checkout's GitHub origin; `--repo owner/name` overrid
 | `warmbuild builds [--branch <b>] [--limit <n>]` | recent CI jobs: id, ref, duration, cache hits/misses/rate, test results |
 | `warmbuild report [--job <id>]` | one job (default newest): time per category, targets by compile time with cache hits and misses, slowest tasks and tests |
 | `warmbuild findings` | the dashboard's findings with estimated time per job |
+| `warmbuild insights [--local]` | which module recompiles most and pulls others with it, and which of its parts could move into a package (share of pull requests spared, time saved) |
 | `warmbuild tests --slow\|--flaky\|--failing [--limit <n>]` | the slowest tests, tests that passed only on a retry, or tests that failed every run, over recent CI jobs |
 | `warmbuild why-miss <target> [--jobs <n>]` | a target's hits and misses across recent jobs, and which of Xcode, runner, ref, event and commit differ from the last job without misses; it cannot see inside cache keys |
 

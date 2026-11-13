@@ -26,9 +26,20 @@ catalogs in the checkout, writes a summary with findings to the job summary, and
 dashboard. The report holds task and target names, file names without their directories, test
 names, durations, counts and sizes; for type-checking, the source file's path within the checkout,
 its line and the declaration the compiler named (`getter for property 'body'`). It never holds
-source code, command lines, log output or environment variables. Set `report: false` to turn it off. `xcodebuild test` always leaves what the
+source code, command lines, log output or environment variables (apart from the runner image's name
+and version, and the Xcode and Simulator runtime versions). Set `report: false` to turn it off. `xcodebuild test` always leaves what the
 report needs; a build-only step (`xcodebuild build`) keeps its log only in a result bundle, so pass
 it `-resultBundlePath "$RUNNER_TEMP/build.xcresult"` to have it counted.
+
+When a job runs on a new Xcode, runner image or Simulator runtime, its summary says so and what it means for the
+caches. A new Xcode changes every compilation cache key, so that run fills the cache again and is
+slow. A new image with the same Xcode keeps compiled results. A new runtime makes cached test
+results run again. The dashboard marks the job on its trend with the hit rate before and after.
+
+The summary also counts compile tasks that could not use the cache (for example,
+`SWIFT_ENABLE_EXPLICIT_MODULES = NO`, which React Native below 0.87 sets on every pod target), with
+the target, the setting or flag and the fix. The dashboard shows the share per job. When fetching
+remote Swift packages takes 20 s or more, it suggests caching `SourcePackages` with `actions/cache`.
 
 Reading result bundles may take `report-budget` seconds (90) in total; what does not fit is skipped
 and named in the summary. A Simulator that is still running keeps the runner's CPUs busy and makes
