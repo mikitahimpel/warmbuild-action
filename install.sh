@@ -1,7 +1,7 @@
 #!/bin/sh
 # Installs (or updates) the Warmbuild cache for local Xcode builds, in one command:
-#   curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh | sh
-# 1. Downloads warmbuild.mjs from a pinned release of mikitahimpel/warmbuild-action (or, while that
+#   curl -fsSL https://warmbuild.dev/install.sh | sh
+# 1. Downloads warmbuild.mjs from a pinned release of warmbuild/action (or, while that
 #    release is not published yet, the latest one), checks it against the SHA-256 published beside
 #    it, and installs it to ~/.warmbuild/bin. No sudo.
 # 2. Adds ~/.warmbuild/bin to PATH in your shell profile: asks first in a terminal, otherwise only
@@ -14,8 +14,8 @@
 # Run it again to update: it replaces the CLI and restarts the cache on the new version.
 set -eu
 
-version="1.12.3"
-repo="mikitahimpel/warmbuild-action"
+version="1.12.4"
+repo="warmbuild/action"
 base="${WARMBUILD_DOWNLOAD_URL:-https://github.com/$repo/releases/download/v$version}"
 latest="${WARMBUILD_LATEST_URL:-https://github.com/$repo/releases/latest/download}"
 home="${WARMBUILD_HOME:-$HOME/.warmbuild}"

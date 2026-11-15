@@ -7,7 +7,7 @@ inputs:
   url:
     description: Cache API URL
     required: false
-    default: https://warmbuild-cache-dev.mikitahimpel.com
+    default: https://cache.warmbuild.dev
   token:
     description: "A Warmbuild API token, for runners without GitHub OIDC. Leave empty on GitHub-hosted runners (the job needs `permissions: id-token: write`)."
     required: false

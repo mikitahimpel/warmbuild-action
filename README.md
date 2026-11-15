@@ -12,7 +12,7 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
-      - uses: mikitahimpel/warmbuild-action@v1
+      - uses: warmbuild/action@v1
       - run: xcodebuild build -scheme App -destination 'generic/platform=iOS Simulator'
 ```
 
@@ -58,7 +58,7 @@ everything, so the default branch catches anything selection skipped. Pass the a
 `xcodebuild test` (or `swift test --filter` for a package):
 
 ```yaml
-      - uses: mikitahimpel/warmbuild-action@v1
+      - uses: warmbuild/action@v1
         id: warmbuild
         with:
           select-tests: true
@@ -112,7 +112,7 @@ again; the job summary says which run it reused. Add the `test-cache` step betwe
 
 ```yaml
       - run: xcodebuild build-for-testing -scheme App -destination "id=$UDID" -derivedDataPath "$RUNNER_TEMP/dd"
-      - uses: mikitahimpel/warmbuild-action/test-cache@v1
+      - uses: warmbuild/action/test-cache@v1
         id: tests
         with:
           derived-data: ${{ runner.temp }}/dd
@@ -143,7 +143,7 @@ title or body) runs everything; passes are still recorded.
 The same cache for local Xcode builds, read-only: what CI compiled on the default branch.
 
 ```sh
-curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh | sh   # or: sh install.sh from this repository
+curl -fsSL https://warmbuild.dev/install.sh | sh   # or: sh install.sh from this repository
 ~/.warmbuild/bin/warmbuild login       # GitHub device code, token in the Keychain
 cd your-app && ~/.warmbuild/bin/warmbuild start   # LaunchAgent + ~/.warmbuild/warmbuild.xcconfig
 export XCODE_XCCONFIG_FILE="$HOME/.warmbuild/warmbuild.xcconfig"   # for xcodebuild; restart Xcode once
@@ -176,7 +176,7 @@ or a repository's `.claude/skills/warmbuild/`), and `skills/warmbuild/AGENTS-sni
 for an `AGENTS.md`.
 
 Your GitHub account or organisation needs the Warmbuild GitHub App and an approved account. Sign in
-and set it up at the [Warmbuild dashboard](https://warmbuild-dev.mikitahimpel.com) (early access).
+and set it up at the [Warmbuild dashboard](https://warmbuild.dev) (early access).
 
 | Input | Default | |
 | --- | --- | --- |

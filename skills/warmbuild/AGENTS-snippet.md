@@ -5,8 +5,8 @@ cache from what CI built.
 
 - Not installed (`command -v warmbuild` and `~/.warmbuild/bin/warmbuild` both missing, or an Xcode
   warning "Builds can reuse CI's compiled code"): with the user's OK, run in the repository
-  `curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh | sh -s -- --add-to-path`
-  (or `brew install mikitahimpel/tap/warmbuild`). Then `warmbuild login`: it prints a GitHub URL
+  `curl -fsSL https://warmbuild.dev/install.sh | sh -s -- --add-to-path`
+  (or `brew install warmbuild/tap/warmbuild`). Then `warmbuild login`: it prints a GitHub URL
   and a code; show both to the user, who enters the code (it waits up to 15 minutes; GitHub access
   to the repository is enough). Then `warmbuild start` in the repository.
 
@@ -21,7 +21,7 @@ cache from what CI built.
   branch reaches (empty output: all tests).
 - CI report data, read-only, `--json` on each: `warmbuild builds`, `warmbuild report [--job <id>]`,
   `warmbuild findings`, `warmbuild why-miss <target>`, `warmbuild tests --slow|--flaky|--failing`.
-- No shell: the MCP server `https://warmbuild-mcp-dev.mikitahimpel.com/mcp` has the same CI report
+- No shell: the MCP server `https://mcp.warmbuild.dev/mcp` has the same CI report
   data as tools (the user adds it to the agent's client).
 - `warmbuild login` is interactive and the user's to run. Never read or print the Warmbuild token.
 - If a Warmbuild command or the cache fails, `warmbuild stop` and build without it.

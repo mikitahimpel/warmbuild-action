@@ -13,7 +13,7 @@ is optional: builds work the same without it.
 
 | Command | What it does |
 | --- | --- |
-| `curl -fsSL https://warmbuild-dev.mikitahimpel.com/install.sh \| sh` | Installs `~/.warmbuild/bin/warmbuild` (macOS, Node 20+), and in a repository also starts the cache. Without a terminal it does not sign in or edit the shell profile; it prints those steps. The daemon updates itself daily; `warmbuild update` does it now. |
+| `curl -fsSL https://warmbuild.dev/install.sh \| sh` | Installs `~/.warmbuild/bin/warmbuild` (macOS, Node 20+), and in a repository also starts the cache. Without a terminal it does not sign in or edit the shell profile; it prints those steps. The daemon updates itself daily; `warmbuild update` does it now. |
 | `warmbuild login` | GitHub device flow; the user enters a code in a browser. Stores a read-only token in the macOS Keychain. Interactive: the user runs it. |
 | `warmbuild start` | In a repository: starts the cache server (LaunchAgent), writes `~/.warmbuild/warmbuild.xcconfig`, and maps every worktree of the repository the way CI maps its checkout, so builds in any worktree (also several at once) share CI's keys. Once per repository. |
 | `warmbuild stop` | Stops the server and empties the xcconfig; builds then run without the cache. |
@@ -96,7 +96,7 @@ repository defaults to the checkout's GitHub origin; `--repo owner/name` overrid
 
 No shell? Use the MCP server: the same CI report data, read-only, as the tools `list_repositories`,
 `latest_ci_report`, `why_cache_miss`, `tests`, `pr_test_selection` and `build_insights` at
-`https://warmbuild-mcp-dev.mikitahimpel.com/mcp` (remote, Streamable HTTP, GitHub sign-in; the user
+`https://mcp.warmbuild.dev/mcp` (remote, Streamable HTTP, GitHub sign-in; the user
 adds it to the client).
 
 A request that fails prints `warmbuild: <reason>` on stderr and exits 1 (not signed in, no
